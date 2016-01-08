@@ -3,8 +3,7 @@
 
 #include <Kinect.h>
 #include <opencv2\opencv.hpp>
-#include "unko.h"
-#include "ForEnglish.h"
+
 #include <atlbase.h>
 
 // 次のように使います
@@ -31,13 +30,11 @@ private:
     int depthHeight;
 
     std::vector<UINT16> depthBuffer;
-	std::vector<UINT16> revercedBuffer;
 
     int depthPointX;
     int depthPointY;
 
     const char* DepthWindowName = "Depth Image";
-	const char* DepthAfterProcess = "Depth Image After";
 
 public:
 
@@ -83,7 +80,6 @@ public:
 
         // バッファーを作成する
         depthBuffer.resize( depthWidth * depthHeight );
-		revercedBuffer.resize(depthWidth*depthHeight);
 
         // マウスクリックのイベントを登録する
         cv::namedWindow( DepthWindowName );
@@ -104,7 +100,6 @@ public:
         if ( event == CV_EVENT_LBUTTONDOWN ) {
             depthPointX = x;
             depthPointY = y;
-			EROR_CHECK
         }
     }
 
@@ -145,21 +140,17 @@ private:
 
     void draw()
     {
-		revercedBuffer = ProcessImage(depthBuffer, depthHeight, depthWidth);
-		drawDepthFrame();
+        drawDepthFrame();
     }
 
     void drawDepthFrame()
     {
         // Depthデータを表示する
         cv::Mat depthImage( depthHeight, depthWidth, CV_8UC1 );
-		// フィルタ後
-		cv::Mat depthAfter( depthHeight, depthWidth, CV_8UC1);
 
         // Depthデータを0-255のグレーデータにする
         for ( int i = 0; i < depthImage.total(); ++i ){
             depthImage.data[i] = depthBuffer[i] * 255 / 8000;
-			depthAfter.data[i] = revercedBuffer[i] * 255 / 8000;
         }
 
 
@@ -174,14 +165,12 @@ private:
             0, 0.5, cv::Scalar( 255, 255, 255 ));
 
         cv::imshow( DepthWindowName, depthImage );
-		cv::imshow( DepthAfterProcess, depthAfter);
-
     }
 };
 
 void main()
 {
-	try {
+    try {
         KinectApp app;
         app.initialize();
         app.run();
@@ -190,4 +179,3 @@ void main()
         std::cout << ex.what() << std::endl;
     }
 }
-

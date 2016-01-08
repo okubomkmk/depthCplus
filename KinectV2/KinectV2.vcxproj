@@ -87,8 +87,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ComPtr.h" />
-    <ClInclude Include="ForEnglish.h" />
-    <ClInclude Include="unko.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
