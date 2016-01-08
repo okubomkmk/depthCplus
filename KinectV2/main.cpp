@@ -3,7 +3,6 @@
 
 #include <Kinect.h>
 #include <opencv2\opencv.hpp>
-#include "unko.h"
 #include "ForEnglish.h"
 #include <atlbase.h>
 
@@ -104,7 +103,6 @@ public:
         if ( event == CV_EVENT_LBUTTONDOWN ) {
             depthPointX = x;
             depthPointY = y;
-			EROR_CHECK
         }
     }
 
