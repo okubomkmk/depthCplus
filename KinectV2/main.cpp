@@ -31,6 +31,7 @@ private:
 
     std::vector<UINT16> depthBuffer;
 	std::vector<UINT16> revercedBuffer;
+	std::vector<UINT16> PreviousFrame;
 
     int depthPointX;
     int depthPointY;
@@ -83,6 +84,7 @@ public:
         // バッファーを作成する
         depthBuffer.resize( depthWidth * depthHeight );
 		revercedBuffer.resize(depthWidth*depthHeight);
+		PreviousFrame.resize(depthWidth * depthHeight);
 
         // マウスクリックのイベントを登録する
         cv::namedWindow( DepthWindowName );
@@ -143,24 +145,26 @@ private:
 
     void draw()
     {
-		revercedBuffer = ProcessImage(depthBuffer, depthHeight, depthWidth);
+		revercedBuffer = HollFilling(depthBuffer, PreviousFrame, depthHeight, depthWidth);
+		copy(depthBuffer.begin(), depthBuffer.end(), PreviousFrame.begin());
 		drawDepthFrame();
     }
 
     void drawDepthFrame()
     {
         // Depthデータを表示する
-        cv::Mat depthImage( depthHeight, depthWidth, CV_8UC1 );
+        cv::Mat depthImage( depthHeight, depthWidth, CV_8UC1);
 		// フィルタ後
 		cv::Mat depthAfter( depthHeight, depthWidth, CV_8UC1);
-
         // Depthデータを0-255のグレーデータにする
-        for ( int i = 0; i < depthImage.total(); ++i ){
+        
+
+		for ( int i = 0; i < depthImage.total(); ++i ){
             depthImage.data[i] = depthBuffer[i] * 255 / 8000;
 			depthAfter.data[i] = revercedBuffer[i] * 255 / 8000;
         }
 
-
+		
         // Depthデータのインデックスを取得して、その場所の距離を表示する
         int index = (depthPointY * depthWidth) + depthPointX;
         std::stringstream ss;
