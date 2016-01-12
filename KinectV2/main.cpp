@@ -5,7 +5,7 @@
 #include <opencv2\opencv.hpp>
 #include "ForEnglish.h"
 #include <atlbase.h>
-
+#include "ImgClass.h"
 // 次のように使います
 // ERROR_CHECK( ::GetDefaultKinectSensor( &kinect ) );
 // 書籍での解説のためにマクロにしています。実際には展開した形で使うことを検討してください。
@@ -18,8 +18,7 @@
 
 class KinectApp
 {
-private:
-
+private:		
     // Kinect SDK
     CComPtr<IKinectSensor> kinect = nullptr;
 
@@ -32,7 +31,7 @@ private:
     std::vector<UINT16> depthBuffer;
 	std::vector<UINT16> revercedBuffer;
 	std::vector<UINT16> PreviousFrame;
-
+	std::vector<ImgVector<UINT16>> FrameBuffer;
     int depthPointX;
     int depthPointY;
 
@@ -85,7 +84,15 @@ public:
         depthBuffer.resize( depthWidth * depthHeight );
 		revercedBuffer.resize(depthWidth*depthHeight);
 		PreviousFrame.resize(depthWidth * depthHeight);
+		
+		std::vector<ImgVector<UINT16> > FrameBuffer(GETFRAMENUMBER);
+		for (int i = 0; i < GETFRAMENUMBER; i++)
+		{
+			FrameBuffer[i].reset(depthWidth, depthHeight);
+		}
 
+		
+	    // FrameBuffer = std::vector < std:: vector<UINT16> >(GETFRAMENUMBER, std::vector<UINT16>(depthWidth * depthHeight, 8000));
         // マウスクリックのイベントを登録する
         cv::namedWindow( DepthWindowName );
         cv::setMouseCallback( DepthWindowName, &KinectApp::mouseCallback, this );
@@ -131,7 +138,7 @@ private:
 
     void updateDepthFrame()
     {
-        // Depthフレームを取得する
+        // Depthフレームを取得
         CComPtr<IDepthFrame> depthFrame;
         auto ret = depthFrameReader->AcquireLatestFrame( &depthFrame );
         if ( ret != S_OK ){
@@ -142,17 +149,19 @@ private:
         ERROR_CHECK( depthFrame->CopyFrameDataToArray(
                         depthBuffer.size(), &depthBuffer[0] ) );
     }
-
+	// うんこを表示する
     void draw()
     {
-		revercedBuffer = HollFilling(depthBuffer, PreviousFrame, depthHeight, depthWidth);
-		copy(depthBuffer.begin(), depthBuffer.end(), PreviousFrame.begin());
+		FrameBuffer = PushBuffer(FrameBuffer);
+		//revercedBuffer = HollFillingMultipleFrame(FrameBuffer, depthWidth, depthHeight);
+		
+		// これで臭くなる
 		drawDepthFrame();
     }
 
     void drawDepthFrame()
     {
-        // Depthデータを表示する
+        // Depthデータを表示するかコレ?
         cv::Mat depthImage( depthHeight, depthWidth, CV_8UC1);
 		// フィルタ後
 		cv::Mat depthAfter( depthHeight, depthWidth, CV_8UC1);
